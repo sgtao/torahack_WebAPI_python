@@ -65,3 +65,5 @@ CREATE TABLE users (
 #### Fetch all data from users table
 `SELECT * FROM users;`
 
+## LICENSE
+The source code is licensed MIT.
