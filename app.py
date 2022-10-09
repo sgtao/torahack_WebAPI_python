@@ -30,7 +30,23 @@ def userslist():
     # データベースを開く
     conn = get_connect()
     cur = conn.cursor()
-    data = conn.execute('SELECT * FROM users')
+    sql = 'SELECT * FROM users'
+    data = conn.execute(sql)
+    result = data.fetchall()
+    # print(result)
+    #
+    cur.close()
+    conn.close()
+    return result
+#
+# get a user
+@app.route("/api/v1/user/<int:user_id>", methods=["GET"])
+def userinfo(user_id):
+    # データベースを開く
+    conn = get_connect()
+    cur = conn.cursor()
+    sql = 'SELECT * FROM users WHERE id = ' + str(user_id)
+    data = conn.execute(sql)
     result = data.fetchall()
     # print(result)
     #
