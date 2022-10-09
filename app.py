@@ -19,30 +19,18 @@ def get_connect(conn = ""):
     if conn == "":
         # データベースをオープンしてFlaskのグローバル変数に保存
         return sqlite3.connect(dbname)
-    # conn.row_factory = dict_factory
     return conn
-#
-def dict_factory(cursor, row):
-   d = {}
-   for idx, col in enumerate(cursor.description):
-       d[col[0]] = row[idx]
-   return d
 #
 def get_jsondata_from_sql(conn, sql):
     cur = conn.cursor()
     data = conn.execute(sql)
     result = data.fetchall()
-    # read_data = pd.read_sql(sql, conn).transpose()
     read_data = pd.read_sql(sql, conn)
-    # print(read_data)
     dict_data = read_data.to_dict(orient="index")
     items = []
     for item in dict_data.values():
-        # print(item)
         items.append(item)
-    # result = json.dumps(items, indent=4, ensure_ascii=False)
     result = json.dumps(items)
-    # print(result)
     #
     cur.close()
     return json.loads(result)
@@ -80,23 +68,6 @@ def main():
     app.run(host=host, port=port)
 #
 if __name__ == '__main__':
-    # # test DB --start--
-    # conn = get_connect()
-    # # cur = conn.cursor()
-    # # terminalで実行したSQL文と同じようにexecute()に書く
-    # # cur.execute('SELECT * FROM users')
-    # # data = cur.fetchone()
-    # # result = dict(zip(item_keys, data))
-    # # data = pd.read_sql('SELECT * FROM users', conn)
-    # # data = pd.read_sql('SELECT * FROM users WHERE id = 1', conn)
-    # # result = data.transpose().to_dict()
-    # # print(json.dumps(result, ensure_ascii=False))
-    # sql = 'SELECT * FROM users WHERE id = 1'
-    # print(get_jsondata_from_sql(conn, sql))
-    # # print(result)
-    # # cur.close()
-    # conn.close()
-    # # test DB -- end --
     main()
 #
 # EOF
