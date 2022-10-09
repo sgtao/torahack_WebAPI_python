@@ -3,6 +3,7 @@
   *  refer Youtube１ : [「Re:ゼロから始めるWeb API入門【基礎編】」](https://www.youtube.com/playlist?list=PLX8Rsrpnn3IVsi0NIDP3yRlFCS0uOZdqv)
   *  refer Youtube２ : [「Re:ゼロから始めるWeb API入門【実践編】」](https://www.youtube.com/playlist?list=PLX8Rsrpnn3IVsi0NIDP3yRlFCS0uOZdqv)
   - refer GitHub : https://github.com/deatiger/basic-rest-api
+  - refer StackOverFlow : https://stackoverflow.com/questions/25564399/send-json-response-from-sqlite-queries-in-python
 
 ## 設計物
 
