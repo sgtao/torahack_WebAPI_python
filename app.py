@@ -8,7 +8,7 @@
 import os
 import json
 import sqlite3
-from flask import Flask,render_template,request,g
+from flask import Flask, request
 import pandas as pd
 #
 app = Flask(__name__)
@@ -37,7 +37,7 @@ def get_jsondata_from_sql(conn, sql):
 #
 # get users list
 @app.route("/api/v1/users")
-def userslist():
+def get_users_list():
     # データベースを開く
     conn = get_connect()
     sql = 'SELECT * FROM users'
@@ -49,7 +49,7 @@ def userslist():
 #
 # get a user
 @app.route("/api/v1/user/<int:user_id>", methods=["GET"])
-def userinfo(user_id):
+def get_user_info(user_id):
     # データベースを開く
     conn = get_connect()
     sql = 'SELECT * FROM users WHERE id = ' + str(user_id)
@@ -58,6 +58,20 @@ def userinfo(user_id):
     #
     conn.close()
     return result[0]
+#
+# search user
+@app.route("/api/v1/search", methods=["GET"])
+def search_user():
+    keyword = request.args.get("q")
+    # print("search with " + keyword)
+    # データベースを開く
+    conn = get_connect()
+    sql = 'SELECT * FROM users WHERE name LIKE "%' + str(keyword) + '%"'
+    result = get_jsondata_from_sql(conn, sql)
+    # print(result)
+    #
+    conn.close()
+    return result
 #
 # run after setup
 def main():
