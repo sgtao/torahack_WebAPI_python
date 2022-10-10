@@ -9,7 +9,8 @@ import os
 import os.path
 import json
 import sqlite3
-from flask import Flask, request, Response, send_from_directory
+from flask import Flask, request, Response
+from flask import send_from_directory, jsonify
 import pandas as pd
 #
 app = Flask(__name__)
@@ -73,6 +74,46 @@ def search_user():
     #
     conn.close()
     return result
+#
+# for POST/PUT/DELETE Request
+def run_database(conn, sql):
+    cur = conn.cursor()
+    try:
+        cur.execute(sql)
+        print("Query successful")
+    finally:
+        conn.commit()
+        cur.close()
+    return
+#
+# add a new user
+@app.route('/api/v1/users',methods=["POST"])
+def post_user():
+    req_json = json.loads(request.get_data())
+    print(req_json)
+    # Error Check (name is exist?)
+    if req_json['name'] is None or req_json['name'] == "":
+        error = {
+            "code": 400,
+            # "type": "Bad Request",
+            "description": "UserName is not Set!",
+        }
+        print(error)
+        response = jsonify({'message': error['description']})
+        return response, error['code']
+    #
+    name = req_json['name']
+    profile = req_json['profile'] if req_json['profile']  is not "" else ""
+    dateOfBirth = req_json['date_of_birth'] if req_json['date_of_birth'] is not "" else ""
+    #
+    conn = get_connect()
+    sql = 'INSERT INTO users (name, profile, date_of_birth) VALUES ('
+    sql += '"' + name + '", "' + profile+ '", "' + dateOfBirth + '")'
+    print(sql)
+    run_database(conn, sql)
+    #
+    conn.close()
+    return jsonify({ 'message': "新規ユーザーを作成しました。"}), 202
 #
 # temporal web service
 # refer web-dev-qa-db-ja.com
