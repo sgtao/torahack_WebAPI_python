@@ -3,6 +3,10 @@ const indexModule = (() => {
   //
   switch (path) {
     case "/":
+      // 検索ボタンのイベントを追加
+      document.querySelector("#search-btn").addEventListener('click', ()=>{
+        return searchModule.searchUsers();
+      });
       // Usersモジュールのfetchを実行
       return usersModule.fetchAllUsers();
     //
