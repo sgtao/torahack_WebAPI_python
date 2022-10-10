@@ -2,7 +2,8 @@
 - Youtube【とらゼミ】チャンネルのWebAPI講座をPythonで実装してみる
   *  refer Youtube１ : [「Re:ゼロから始めるWeb API入門【基礎編】」](https://www.youtube.com/playlist?list=PLX8Rsrpnn3IVsi0NIDP3yRlFCS0uOZdqv)
   *  refer Youtube２ : [「Re:ゼロから始めるWeb API入門【実践編】」](https://www.youtube.com/watch?v=9GGRICOjA4c&list=PLX8Rsrpnn3IVW5P1H1s_AOP0EEyMyiRDA)
-  - refer GitHub : https://github.com/deatiger/basic-rest-api
+  * refer GitHub : https://github.com/deatiger/basic-rest-api
+  * refer web-dev-qa-db-ja : 『[Flaskで静的ファイルを提供する方法](https://www.web-dev-qa-db-ja.com/ja/python/flask%E3%81%A7%E9%9D%99%E7%9A%84%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E6%8F%90%E4%BE%9B%E3%81%99%E3%82%8B%E6%96%B9%E6%B3%95/1044299462/)』
 
 ## 設計物
 
@@ -64,6 +65,36 @@ CREATE TABLE users (
 
 #### Fetch all data from users table
 `SELECT * FROM users;`
+
+## クライアント（Webサイト）
+- 講座では同一オリジン内でウェブサービスを立ち上げており、同じ方法に従う
+  * **Blueprint**や**WSGI**は利用せず、`app.py`単体で立ち上げる
+```python
+@app.route('/')
+def index():
+    content = get_public_file('index.html')
+    return Response(content, mimetype="text/html")
+#
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(public_dir(),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
+#
+@app.route('/<path:path>')
+def get_resource(path):  # pragma: no cover
+    mimetypes = {
+        ".css": "text/css",
+        ".html": "text/html",
+        ".js": "application/javascript",
+    }
+    complete_path = os.path.join(public_dir(), path)
+    ext = os.path.splitext(path)[1]
+    # print('request file extention is ', ext)
+    mimetype = mimetypes.get(ext, "text/html")
+    content = get_public_file(complete_path)
+    return Response(content, mimetype=mimetype)
+#
+```
 
 ## LICENSE
 The source code is licensed MIT.
