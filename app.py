@@ -4,6 +4,10 @@
 # |:------|:-----:|------:|
 # | GET   | /api/v1/users   | ユーザリストの取得 |
 # | GET   | /api/v1/users/123   | ユーザ情報の取得 |
+# | GET   | /api/v1/search?q=hoge   | ユーザ検索結果の取得 |
+# | POST  | /api/v1/users   | 新規ユーザの作成 |
+# | PUT   | /api/v1/users/123   | ユーザ情報の更新 |
+# | DELETE | /api/v1/users/123   | ユーザの削除 |
 # 
 import os
 import os.path
@@ -102,9 +106,18 @@ def post_user():
         response = jsonify({'message': error['description']})
         return response, error['code']
     #
+    # data set for SQL command
     name = req_json['name']
-    profile = req_json['profile'] if req_json['profile']  is not "" else ""
-    dateOfBirth = req_json['date_of_birth'] if req_json['date_of_birth'] is not "" else ""
+    # profile = req_json['profile'] if req_json['profile']  is not "" else ""
+    if req_json['profile']  is not "":
+        profile = req_json['profile']
+    else:
+        profile = ""
+    # dateOfBirth = req_json['date_of_birth'] if req_json['date_of_birth'] is not "" else ""
+    if req_json['date_of_birth'] is not "":
+        dateOfBirth =  req_json['date_of_birth']
+    else:
+        dateOfBirth = ""
     #
     conn = get_connect()
     sql = 'INSERT INTO users (name, profile, date_of_birth) VALUES ('
@@ -138,8 +151,11 @@ def index():
 #
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(public_dir(),
-                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
+    return send_from_directory(
+        public_dir(),
+        'favicon.ico',
+        mimetype='image/vnd.microsoft.icon'
+    )
 #
 @app.route('/<path:path>')
 def get_resource(path):  # pragma: no cover
