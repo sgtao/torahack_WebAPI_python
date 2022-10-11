@@ -11,9 +11,10 @@ const usersModule = (() => {
     //
     const handleError = async (res) => {
       const resJson = await res.json();
-
+      //
       switch (res.status) {
         case 200:
+        case 202:
           alert(resJson.message);
           window.location.href = "/"; // ホーム画面に戻る
           // window.close(); // 新規作成ウィンドウを閉じる
@@ -42,5 +43,25 @@ const usersModule = (() => {
             document.querySelector('#users-list').insertAdjacentHTML('beforeend', body);
           }
         },
-    }
+        createUser: async () => {
+          const name = document.querySelector("#name").value;
+          const profile = document.querySelector("#profile").value;
+          const dateOfBirth = document.querySelector("#date-of-birth").value;
+          //
+          // リクエストのbody
+          const body = {
+            name: name,
+            profile: profile,
+            date_of_birth: dateOfBirth
+          };
+          console.log(body);
+          const res = await fetch(BASE_URL + '/users', {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(body)
+          });
+          console.log(res);
+          handleError(res);
+        }
+      }
 })();

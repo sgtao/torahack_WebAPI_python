@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>WebAPIハンズオン-新規作成-</title>
+  <!-- Load scripts -->
+  <script src="scripts/users.js" defer></script>
+  <script src="scripts/index.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>WebAPIハンズオン-新規作成-</h1>
+    <ul>
+      <li>
+        <label for="uid">ID</label>
+        <input type="text" id="uid" placeholder="自動採番されます" disabled />
+      </li>
+      <li>
+        <label for="name">ユーザー名</label>
+        <input type="text" id="name" />
+      </li>
+      <li>
+        <label for="profile">プロフィール</label>
+        <input type="text" id="profile" />
+      </li>
+      <li>
+        <label for="date-of-birth">誕生日</label>
+        <input type="date" id="date-of-birth" />
+      </li>
+      <li>
+        <button id="save-btn">保存する</button>
+        <button id="cancel-btn">キャンセル</button>
+      </li>
+    </ul>
+  </main>
+</body>
+</html>
