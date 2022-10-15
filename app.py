@@ -167,6 +167,21 @@ def put_user(user_id):
     conn.close()
     return jsonify({ 'message': "ユーザー情報を更新しました。"}), 201
 #
+#
+# delete a existing user
+@app.route("/api/v1/user/<int:user_id>",methods=["DELETE"])
+def delete_user(user_id):
+    # req_json = json.loads(request.get_data())
+    # print(req_json)
+    #
+    conn = get_connect()
+    sql  = 'DELETE FROM users WHERE id=' + str(user_id)
+    # print(sql)
+    run_database(conn, sql)
+    #
+    conn.close()
+    return jsonify({ 'message': "ユーザー情報を更新しました。"}), 201
+#
 # temporal web service
 # refer web-dev-qa-db-ja.com
 def public_dir():  # pragma: no cover
