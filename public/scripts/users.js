@@ -38,6 +38,7 @@ const usersModule = (() => {
                             <td>${user.created_at}</td>
                             <td>${user.updated_at}</td>
                             <td>
+                              <a href="edit.html?uid=${user.id}">編集</a>
                             </td>
                           </tr>`;
             document.querySelector('#users-list').insertAdjacentHTML('beforeend', body);
@@ -62,6 +63,31 @@ const usersModule = (() => {
           });
           console.log(res);
           handleError(res);
-        }
+        },
+        setExistingValue: async(uid) => {
+          const res = await fetch(BASE_URL + "/user/" + uid);
+          const resJson = await res.json();
+          //
+          document.getElementById('name').value = resJson.name;
+          document.getElementById('profile').value = resJson.profile;
+          document.getElementById('date-of-birth').value = resJson.date_of_birth;
+        },
+        saveUser: async (uid) => {
+          const name = document.querySelector("#name").value;
+          const profile = document.querySelector("#profile").value;
+          const dateOfBirth = document.querySelector("#date-of-birth").value;
+          // リクエストのbody
+          const body = {
+            name: name,
+            profile: profile,
+            date_of_birth: dateOfBirth
+          };
+          //
+          const res = await fetch(BASE_URL + '/user/' + uid, {
+            method: "PUT",
+            headers: headers,
+            body: JSON.stringify(body)
+          });
+        },
       }
 })();

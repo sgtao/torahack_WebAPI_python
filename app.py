@@ -94,7 +94,7 @@ def run_database(conn, sql):
 @app.route('/api/v1/users',methods=["POST"])
 def post_user():
     req_json = json.loads(request.get_data())
-    print(req_json)
+    # print(req_json)
     # Error Check (name is exist?)
     if req_json['name'] is None or req_json['name'] == "":
         error = {
@@ -122,11 +122,50 @@ def post_user():
     conn = get_connect()
     sql = 'INSERT INTO users (name, profile, date_of_birth) VALUES ('
     sql += '"' + name + '", "' + profile+ '", "' + dateOfBirth + '")'
-    print(sql)
+    # print(sql)
     run_database(conn, sql)
     #
     conn.close()
-    return jsonify({ 'message': "新規ユーザーを作成しました。"}), 202
+    return jsonify({ 'message': "新規ユーザーを作成しました。"}), 201
+#
+# update a existing user
+@app.route("/api/v1/user/<int:user_id>",methods=["PUT"])
+def put_user(user_id):
+    req_json = json.loads(request.get_data())
+    # print(req_json)
+    # Error Check (name is exist?)
+    if req_json['name'] is None or req_json['name'] == "":
+        error = {
+            "code": 400,
+            # "type": "Bad Request",
+            "description": "UserName is not Set!",
+        }
+        print(error)
+        response = jsonify({'message': error['description']})
+        return response, error['code']
+    #
+    # data set for SQL command
+    name = req_json['name']
+    # profile = req_json['profile'] if req_json['profile']  is not "" else ""
+    if req_json['profile']  is not "":
+        profile = req_json['profile']
+    else:
+        profile = ""
+    # dateOfBirth = req_json['date_of_birth'] if req_json['date_of_birth'] is not "" else ""
+    if req_json['date_of_birth'] is not "":
+        dateOfBirth =  req_json['date_of_birth']
+    else:
+        dateOfBirth = ""
+    #
+    conn = get_connect()
+    sql  = 'UPDATE users SET name="' + name + '", '
+    sql += ' profile="' + profile + '", date_of_birth="' + dateOfBirth 
+    sql += '" WHERE id=' + str(user_id)
+    # print(sql)
+    run_database(conn, sql)
+    #
+    conn.close()
+    return jsonify({ 'message': "ユーザー情報を更新しました。"}), 201
 #
 # temporal web service
 # refer web-dev-qa-db-ja.com
