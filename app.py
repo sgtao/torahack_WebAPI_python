@@ -4,12 +4,17 @@
 # |:------|:-----:|------:|
 # | GET   | /api/v1/users   | ユーザリストの取得 |
 # | GET   | /api/v1/users/123   | ユーザ情報の取得 |
+# | GET   | /api/v1/search?q=hoge   | ユーザ検索結果の取得 |
+# | POST  | /api/v1/users   | 新規ユーザの作成 |
+# | PUT   | /api/v1/users/123   | ユーザ情報の更新 |
+# | DELETE | /api/v1/users/123   | ユーザの削除 |
 # 
 import os
 import os.path
 import json
 import sqlite3
-from flask import Flask, request, Response, send_from_directory
+from flask import Flask, request, Response
+from flask import send_from_directory, jsonify
 import pandas as pd
 #
 app = Flask(__name__)
@@ -74,6 +79,109 @@ def search_user():
     conn.close()
     return result
 #
+# for POST/PUT/DELETE Request
+def run_database(conn, sql):
+    cur = conn.cursor()
+    try:
+        cur.execute(sql)
+        print("Query successful")
+    finally:
+        conn.commit()
+        cur.close()
+    return
+#
+# add a new user
+@app.route('/api/v1/users',methods=["POST"])
+def post_user():
+    req_json = json.loads(request.get_data())
+    # print(req_json)
+    # Error Check (name is exist?)
+    if req_json['name'] is None or req_json['name'] == "":
+        error = {
+            "code": 400,
+            # "type": "Bad Request",
+            "description": "UserName is not Set!",
+        }
+        print(error)
+        response = jsonify({'message': error['description']})
+        return response, error['code']
+    #
+    # data set for SQL command
+    name = req_json['name']
+    # profile = req_json['profile'] if req_json['profile']  is not "" else ""
+    if req_json['profile']  is not "":
+        profile = req_json['profile']
+    else:
+        profile = ""
+    # dateOfBirth = req_json['date_of_birth'] if req_json['date_of_birth'] is not "" else ""
+    if req_json['date_of_birth'] is not "":
+        dateOfBirth =  req_json['date_of_birth']
+    else:
+        dateOfBirth = ""
+    #
+    conn = get_connect()
+    sql = 'INSERT INTO users (name, profile, date_of_birth) VALUES ('
+    sql += '"' + name + '", "' + profile+ '", "' + dateOfBirth + '")'
+    # print(sql)
+    run_database(conn, sql)
+    #
+    conn.close()
+    return jsonify({ 'message': "新規ユーザーを作成しました。"}), 201
+#
+# update a existing user
+@app.route("/api/v1/user/<int:user_id>",methods=["PUT"])
+def put_user(user_id):
+    req_json = json.loads(request.get_data())
+    # print(req_json)
+    # Error Check (name is exist?)
+    if req_json['name'] is None or req_json['name'] == "":
+        error = {
+            "code": 400,
+            # "type": "Bad Request",
+            "description": "UserName is not Set!",
+        }
+        print(error)
+        response = jsonify({'message': error['description']})
+        return response, error['code']
+    #
+    # data set for SQL command
+    name = req_json['name']
+    # profile = req_json['profile'] if req_json['profile']  is not "" else ""
+    if req_json['profile']  is not "":
+        profile = req_json['profile']
+    else:
+        profile = ""
+    # dateOfBirth = req_json['date_of_birth'] if req_json['date_of_birth'] is not "" else ""
+    if req_json['date_of_birth'] is not "":
+        dateOfBirth =  req_json['date_of_birth']
+    else:
+        dateOfBirth = ""
+    #
+    conn = get_connect()
+    sql  = 'UPDATE users SET name="' + name + '", '
+    sql += ' profile="' + profile + '", date_of_birth="' + dateOfBirth 
+    sql += '" WHERE id=' + str(user_id)
+    # print(sql)
+    run_database(conn, sql)
+    #
+    conn.close()
+    return jsonify({ 'message': "ユーザー情報を更新しました。"}), 201
+#
+#
+# delete a existing user
+@app.route("/api/v1/user/<int:user_id>",methods=["DELETE"])
+def delete_user(user_id):
+    # req_json = json.loads(request.get_data())
+    # print(req_json)
+    #
+    conn = get_connect()
+    sql  = 'DELETE FROM users WHERE id=' + str(user_id)
+    # print(sql)
+    run_database(conn, sql)
+    #
+    conn.close()
+    return jsonify({ 'message': "ユーザー情報を更新しました。"}), 201
+#
 # temporal web service
 # refer web-dev-qa-db-ja.com
 def public_dir():  # pragma: no cover
@@ -97,8 +205,11 @@ def index():
 #
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(public_dir(),
-                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
+    return send_from_directory(
+        public_dir(),
+        'favicon.ico',
+        mimetype='image/vnd.microsoft.icon'
+    )
 #
 @app.route('/<path:path>')
 def get_resource(path):  # pragma: no cover

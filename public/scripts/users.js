@@ -11,9 +11,10 @@ const usersModule = (() => {
     //
     const handleError = async (res) => {
       const resJson = await res.json();
-
+      //
       switch (res.status) {
         case 200:
+        case 202:
           alert(resJson.message);
           window.location.href = "/"; // ホーム画面に戻る
           // window.close(); // 新規作成ウィンドウを閉じる
@@ -37,10 +38,67 @@ const usersModule = (() => {
                             <td>${user.created_at}</td>
                             <td>${user.updated_at}</td>
                             <td>
+                              <a href="edit.html?uid=${user.id}">編集</a>
                             </td>
                           </tr>`;
             document.querySelector('#users-list').insertAdjacentHTML('beforeend', body);
           }
         },
-    }
+        createUser: async () => {
+          const name = document.querySelector("#name").value;
+          const profile = document.querySelector("#profile").value;
+          const dateOfBirth = document.querySelector("#date-of-birth").value;
+          //
+          // リクエストのbody
+          const body = {
+            name: name,
+            profile: profile,
+            date_of_birth: dateOfBirth
+          };
+          console.log(body);
+          const res = await fetch(BASE_URL + '/users', {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(body)
+          });
+          console.log(res);
+          handleError(res);
+        },
+        setExistingValue: async(uid) => {
+          const res = await fetch(BASE_URL + "/user/" + uid);
+          const resJson = await res.json();
+          //
+          document.getElementById('name').value = resJson.name;
+          document.getElementById('profile').value = resJson.profile;
+          document.getElementById('date-of-birth').value = resJson.date_of_birth;
+        },
+        saveUser: async (uid) => {
+          const name = document.querySelector("#name").value;
+          const profile = document.querySelector("#profile").value;
+          const dateOfBirth = document.querySelector("#date-of-birth").value;
+          // リクエストのbody
+          const body = {
+            name: name,
+            profile: profile,
+            date_of_birth: dateOfBirth
+          };
+          //
+          const res = await fetch(BASE_URL + '/user/' + uid, {
+            method: "PUT",
+            headers: headers,
+            body: JSON.stringify(body)
+          });
+        },
+        deleteUser: async (uid) => {
+          const ret = window.confirm("このユーザーを削除しますか？");
+          if (!ret) {
+            return false;
+          } else {
+            const res = await fetch(BASE_URL + '/user/' + uid, {
+              method: "DELETE",
+              headers: headers
+            });
+          }
+        },
+      }
 })();
