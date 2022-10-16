@@ -31,14 +31,16 @@ def get_jsondata_from_sql(conn, sql):
     cur = conn.cursor()
     data = conn.execute(sql)
     result = data.fetchall()
+    # SQL処理：
     read_data = pd.read_sql(sql, conn)
+    cur.close()
+    # print(read_data)
     dict_data = read_data.to_dict(orient="index")
     items = []
     for item in dict_data.values():
         items.append(item)
     result = json.dumps(items)
     #
-    cur.close()
     return json.loads(result)
 #
 # get users list
@@ -60,10 +62,22 @@ def get_user_info(user_id):
     conn = get_connect()
     sql = 'SELECT * FROM users WHERE id = ' + str(user_id)
     result = get_jsondata_from_sql(conn, sql)
-    # print(result)
-    #
     conn.close()
-    return result[0]
+    #
+    # print(result)
+    # print(len(result))
+    #
+    if (len(result)>0):
+        return result[0], 200
+    else:
+        error = {
+            "code": 404,
+            # "type": "Not Found",
+            "message": "Not Found!",
+        }
+        print(error)
+        response = jsonify({'error': error['message']})
+        return response, error['code']
 #
 # search user
 @app.route("/api/v1/search", methods=["GET"])
@@ -100,10 +114,10 @@ def post_user():
         error = {
             "code": 400,
             # "type": "Bad Request",
-            "description": "UserName is not Set!",
+            "message": "UserName is not Set!",
         }
         print(error)
-        response = jsonify({'message': error['description']})
+        response = jsonify({'error': error['message']})
         return response, error['code']
     #
     # data set for SQL command
