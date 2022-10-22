@@ -1,9 +1,35 @@
 # torahack_WebAPI_python
+
+## 概要・参照情報
 - Youtube【とらゼミ】チャンネルのWebAPI講座をPythonで実装してみる
   *  refer Youtube１ : [「Re:ゼロから始めるWeb API入門【基礎編】」](https://www.youtube.com/playlist?list=PLX8Rsrpnn3IVsi0NIDP3yRlFCS0uOZdqv)
   *  refer Youtube２ : [「Re:ゼロから始めるWeb API入門【実践編】」](https://www.youtube.com/watch?v=9GGRICOjA4c&list=PLX8Rsrpnn3IVW5P1H1s_AOP0EEyMyiRDA)
   * refer GitHub : https://github.com/deatiger/basic-rest-api
   * refer web-dev-qa-db-ja : 『[Flaskで静的ファイルを提供する方法](https://www.web-dev-qa-db-ja.com/ja/python/flask%E3%81%A7%E9%9D%99%E7%9A%84%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E6%8F%90%E4%BE%9B%E3%81%99%E3%82%8B%E6%96%B9%E6%B3%95/1044299462/)』
+
+## 利用方法
+1. python3の仮想環境を立ち上げて、起動する
+```shell
+python3 -m venv venv
+source venv/bin/activate
+```
+
+2. 必要パッケージ追加
+```shell
+pip3 install -r requirements.txt
+```
+
+3. アプリ起動＋サイトアクセス
+```shell
+python3 app.py
+# at success, show following messages:
+#  * Serving Flask app 'app'
+#  * Debug mode: off
+#  * Running on all addresses (0.0.0.0)
+#  * Running on http://127.0.0.1:5000
+#  * Running on http://xxx.yyy.zzz:5000
+```
+  * access to shown uri by Web-Browser
 
 ## 設計物
 
