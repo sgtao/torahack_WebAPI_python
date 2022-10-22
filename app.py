@@ -224,6 +224,17 @@ def delete_user(user_id):
     # req_json = json.loads(request.get_data())
     # print(req_json)
     #
+    # Error Check: 指定ユーザがいるか？を確認
+    check_user_id = get_user_info(user_id)
+    # print(check_user_id[1])
+    if (check_user_id[1] == 404):
+        error = {
+            "code": 404,
+            "message": "指定されたユーザーが見つかりません。",
+        }
+        print(error)
+        return jsonify({'message': error['message']}), error['code']
+    #
     conn = get_connect()
     sql  = 'DELETE FROM users WHERE id=' + str(user_id)
     # print(sql)

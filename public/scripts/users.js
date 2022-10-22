@@ -127,6 +127,8 @@ const usersModule = (() => {
               method: "DELETE",
               headers: headers
             });
+            // console.log(res);
+            handleError(res);
           }
         },
       }
