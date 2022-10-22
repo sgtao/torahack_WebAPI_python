@@ -1,9 +1,35 @@
 # torahack_WebAPI_python
+
+## 概要・参照情報
 - Youtube【とらゼミ】チャンネルのWebAPI講座をPythonで実装してみる
   *  refer Youtube１ : [「Re:ゼロから始めるWeb API入門【基礎編】」](https://www.youtube.com/playlist?list=PLX8Rsrpnn3IVsi0NIDP3yRlFCS0uOZdqv)
   *  refer Youtube２ : [「Re:ゼロから始めるWeb API入門【実践編】」](https://www.youtube.com/watch?v=9GGRICOjA4c&list=PLX8Rsrpnn3IVW5P1H1s_AOP0EEyMyiRDA)
   * refer GitHub : https://github.com/deatiger/basic-rest-api
   * refer web-dev-qa-db-ja : 『[Flaskで静的ファイルを提供する方法](https://www.web-dev-qa-db-ja.com/ja/python/flask%E3%81%A7%E9%9D%99%E7%9A%84%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E6%8F%90%E4%BE%9B%E3%81%99%E3%82%8B%E6%96%B9%E6%B3%95/1044299462/)』
+
+## 利用方法
+1. python3の仮想環境を立ち上げて、起動する
+```shell
+python3 -m venv venv
+source venv/bin/activate
+```
+
+2. 必要パッケージ追加
+```shell
+pip3 install -r requirements.txt
+```
+
+3. アプリ起動＋サイトアクセス
+```shell
+python3 app.py
+# at success, show following messages:
+#  * Serving Flask app 'app'
+#  * Debug mode: off
+#  * Running on all addresses (0.0.0.0)
+#  * Running on http://127.0.0.1:5000
+#  * Running on http://xxx.yyy.zzz:5000
+```
+  * access to shown uri by Web-Browser
 
 ## 設計物
 
@@ -19,6 +45,30 @@
 | PUT   | /api/v1/users/123   | ユーザ情報の更新 |
 | DELETE | /api/v1/users/123   | ユーザの削除 |
 | GET   | /api/v1/search?q=hoge   | ユーザ検索結果の取得 |
+
+- エラー発生時の応答
+
+| ステータスコード | テキストフレーズ | 意味・特徴 |
+|:------|:-----:|------:|
+| 200   | OK | リクエストの成功を示す |
+| 201   | Created | リソース作成・更新の成功を示す |
+| 400   | Bad Request | リクエストの構文やパラメータの誤りを示す |
+| 404   | Not Found | リソースが存在しない／URLの解釈失敗などを示す |
+| 500   | Internal Server Error | サーバ側でのエラー発生を示す |
+
+
+#### (参考）ステータスコード大分類
+
+| ステータスコード | 意味 | 詳細 |
+|:------|:-----:|------:|
+| 1xx   | 処理中 | 処理の継続を示す。<br>クライアントがリクエストを継続するか再送信する |
+| 2xx   | 成功   | リクエストの成功を示す |
+| 3xx   | リダイレクト | 他リソースへの移行を示す。<br>`Location`ヘッダから新たなリソースへ接続する |
+| 4xx   | クライアントエラー | クライアントのリクエストが原因のエラーを示す |
+| 5xx   | サーバーエラー | サーバ側のエラー発生を示す |
+
+
+
 
 ### DBの準備
 
@@ -57,14 +107,20 @@ CREATE TABLE users (
 ```
 
 #### Create sample data
-`INSERT INTO users (name, profile) VALUES ("Subaru", "エミリアたんマジ天使！");`
-`INSERT INTO users (name, profile) VALUES ("Emilia", "もう、スバルのオタンコナス！");`
-`INSERT INTO users (name, profile) VALUES ("Ram", "いいえお客様、きっと生まれて来たのが間違いだわ");`
-`INSERT INTO users (name, profile) VALUES ("Rem", "はい、スバルくんのレムです。");`
-`INSERT INTO users (name, profile) VALUES ("Roswaal", "君は私になーぁにを望むのかな？");`
+```sql
+INSERT INTO users (name, profile) VALUES ("Subaru", "エミリアたんマジ天使！");
+INSERT INTO users (name, profile) VALUES ("Emilia", "もう、スバルのオタンコナス！");
+INSERT INTO users (name, profile) VALUES ("Ram", "いいえお客様、きっと生まれて来たのが間違いだわ");
+INSERT INTO users (name, profile) VALUES ("Rem", "はい、スバルくんのレムです。");
+INSERT INTO users (name, profile) VALUES ("Roswaal", "君は私になーぁにを望むのかな？");
+```
 
 #### Fetch all data from users table
-`SELECT * FROM users;`
+```sql
+.schema
+SELECT * FROM users;
+.exit
+```
 
 ## クライアント（Webサイト）
 - 講座では同一オリジン内でウェブサービスを立ち上げており、同じ方法に従う

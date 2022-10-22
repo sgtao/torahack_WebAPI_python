@@ -31,14 +31,16 @@ def get_jsondata_from_sql(conn, sql):
     cur = conn.cursor()
     data = conn.execute(sql)
     result = data.fetchall()
+    # SQL処理：
     read_data = pd.read_sql(sql, conn)
+    cur.close()
+    # print(read_data)
     dict_data = read_data.to_dict(orient="index")
     items = []
     for item in dict_data.values():
         items.append(item)
     result = json.dumps(items)
     #
-    cur.close()
     return json.loads(result)
 #
 # get users list
@@ -60,10 +62,21 @@ def get_user_info(user_id):
     conn = get_connect()
     sql = 'SELECT * FROM users WHERE id = ' + str(user_id)
     result = get_jsondata_from_sql(conn, sql)
-    # print(result)
-    #
     conn.close()
-    return result[0]
+    #
+    # print(result)
+    # print(len(result))
+    #
+    if (len(result)>0):
+        return result[0], 200
+    else:
+        response = {
+            "code": 404,
+            # "type": "Not Found",
+            "message": "Not Found!",
+        }
+        print(response)
+        return jsonify({'message':response['message']}), response['code']
 #
 # search user
 @app.route("/api/v1/search", methods=["GET"])
@@ -84,9 +97,12 @@ def run_database(conn, sql):
     cur = conn.cursor()
     try:
         cur.execute(sql)
-        print("Query successful")
-    finally:
         conn.commit()
+        print("Query success")
+    except Exception as e:
+        print("Query failed at sql:" + sql)
+        raise(e)
+    finally:
         cur.close()
     return
 #
@@ -97,14 +113,13 @@ def post_user():
     # print(req_json)
     # Error Check (name is exist?)
     if req_json['name'] is None or req_json['name'] == "":
-        error = {
+        response = {
             "code": 400,
             # "type": "Bad Request",
-            "description": "UserName is not Set!",
+            "message": "UserName is not Set!",
         }
-        print(error)
-        response = jsonify({'message': error['description']})
-        return response, error['code']
+        print(response)
+        return jsonify({ 'message': response['message']}), response['code']
     #
     # data set for SQL command
     name = req_json['name']
@@ -123,10 +138,22 @@ def post_user():
     sql = 'INSERT INTO users (name, profile, date_of_birth) VALUES ('
     sql += '"' + name + '", "' + profile+ '", "' + dateOfBirth + '")'
     # print(sql)
-    run_database(conn, sql)
+    try:
+        run_database(conn, sql)
+        response = {
+            "code": 201,
+            "message": "新規ユーザーを作成しました。",
+        }
+    except Exception as e:
+        print('error:' + str(e))
+        response = {
+            "code": 500,
+            "message": str(e),
+        }
+    finally:
+        conn.close()
     #
-    conn.close()
-    return jsonify({ 'message': "新規ユーザーを作成しました。"}), 201
+    return jsonify({ 'message': response['message']}), response['code']
 #
 # update a existing user
 @app.route("/api/v1/user/<int:user_id>",methods=["PUT"])
@@ -135,14 +162,25 @@ def put_user(user_id):
     # print(req_json)
     # Error Check (name is exist?)
     if req_json['name'] is None or req_json['name'] == "":
-        error = {
+        response = {
             "code": 400,
             # "type": "Bad Request",
-            "description": "UserName is not Set!",
+            "message": "UserName is not Set!",
         }
-        print(error)
-        response = jsonify({'message': error['description']})
-        return response, error['code']
+        print(response)
+        return jsonify({'message': response['message']}), response['code']
+    #
+    # Error Check: 指定ユーザがいるか？を確認
+    check_user_id = get_user_info(user_id)
+    # print(check_user_id[1])
+    if (check_user_id[1] == 404):
+        response = {
+            "code": 404,
+            # "type": "NOT FOUND",
+            "message": "指定されたユーザーが見つかりません。",
+        }
+        print(response)
+        return jsonify({'message': response['message']}), response['code']
     #
     # data set for SQL command
     name = req_json['name']
@@ -162,10 +200,22 @@ def put_user(user_id):
     sql += ' profile="' + profile + '", date_of_birth="' + dateOfBirth 
     sql += '" WHERE id=' + str(user_id)
     # print(sql)
-    run_database(conn, sql)
+    try:
+        run_database(conn, sql)
+        response = {
+            "code": 201,
+            "message": "ユーザー情報を更新しました。",
+        }
+    except Exception as e:
+        print('error:' + str(e))
+        response = {
+            "code": 500,
+            "message": str(e),
+        }
+    finally:
+        conn.close()
     #
-    conn.close()
-    return jsonify({ 'message': "ユーザー情報を更新しました。"}), 201
+    return jsonify({ 'message': response['message']}), response['code']
 #
 #
 # delete a existing user
@@ -173,6 +223,17 @@ def put_user(user_id):
 def delete_user(user_id):
     # req_json = json.loads(request.get_data())
     # print(req_json)
+    #
+    # Error Check: 指定ユーザがいるか？を確認
+    check_user_id = get_user_info(user_id)
+    # print(check_user_id[1])
+    if (check_user_id[1] == 404):
+        response = {
+            "code": 404,
+            "message": "指定されたユーザーが見つかりません。",
+        }
+        print(response)
+        return jsonify({'message': response['message']}), response['code']
     #
     conn = get_connect()
     sql  = 'DELETE FROM users WHERE id=' + str(user_id)
