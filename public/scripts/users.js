@@ -21,17 +21,15 @@ const usersModule = (() => {
           // window.location.href = "/"; // ホーム画面に戻る
           // window.close(); // 新規作成ウィンドウを閉じる
           break;
-        case 400:
-          // リクエストのパラメータ間違い
-          alert(resJson.message)
-          break;
-        case 404:
-          // 指定したリソースが見つからない
+        case 400: // リクエストのパラメータ間違い
+        case 404: // 指定したリソースが見つからない
           alert(resJson.message);
           break;
-        case 500:
-          // サーバエラー
+        case 500: // サーバエラー
           alert('ServerError: ' + resJson.message);
+          break;
+        default:
+          alert("何らかのエラーが発生しました。");
           break;
       }
     }

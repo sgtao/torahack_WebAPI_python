@@ -70,13 +70,13 @@ def get_user_info(user_id):
     if (len(result)>0):
         return result[0], 200
     else:
-        error = {
+        response = {
             "code": 404,
             # "type": "Not Found",
             "message": "Not Found!",
         }
-        print(error)
-        return jsonify({'message':error['message']}), error['code']
+        print(response)
+        return jsonify({'message':response['message']}), response['code']
 #
 # search user
 @app.route("/api/v1/search", methods=["GET"])
@@ -113,13 +113,13 @@ def post_user():
     # print(req_json)
     # Error Check (name is exist?)
     if req_json['name'] is None or req_json['name'] == "":
-        error = {
+        response = {
             "code": 400,
             # "type": "Bad Request",
             "message": "UserName is not Set!",
         }
-        print(error)
-        return jsonify({'error': error['message']}), error['code']
+        print(response)
+        return jsonify({ 'message': response['message']}), response['code']
     #
     # data set for SQL command
     name = req_json['name']
@@ -162,25 +162,25 @@ def put_user(user_id):
     # print(req_json)
     # Error Check (name is exist?)
     if req_json['name'] is None or req_json['name'] == "":
-        error = {
+        response = {
             "code": 400,
             # "type": "Bad Request",
             "message": "UserName is not Set!",
         }
-        print(error)
-        return jsonify({'message': error['message']}), error['code']
+        print(response)
+        return jsonify({'message': response['message']}), response['code']
     #
     # Error Check: 指定ユーザがいるか？を確認
     check_user_id = get_user_info(user_id)
     # print(check_user_id[1])
     if (check_user_id[1] == 404):
-        error = {
+        response = {
             "code": 404,
-            # "type": "Bad Request",
+            # "type": "NOT FOUND",
             "message": "指定されたユーザーが見つかりません。",
         }
-        print(error)
-        return jsonify({'message': error['message']}), error['code']
+        print(response)
+        return jsonify({'message': response['message']}), response['code']
     #
     # data set for SQL command
     name = req_json['name']
@@ -228,12 +228,12 @@ def delete_user(user_id):
     check_user_id = get_user_info(user_id)
     # print(check_user_id[1])
     if (check_user_id[1] == 404):
-        error = {
+        response = {
             "code": 404,
             "message": "指定されたユーザーが見つかりません。",
         }
-        print(error)
-        return jsonify({'message': error['message']}), error['code']
+        print(response)
+        return jsonify({'message': response['message']}), response['code']
     #
     conn = get_connect()
     sql  = 'DELETE FROM users WHERE id=' + str(user_id)
