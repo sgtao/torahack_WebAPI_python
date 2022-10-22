@@ -11,6 +11,8 @@ const usersModule = (() => {
     //
     const handleError = async (res) => {
       const resJson = await res.json();
+      console.dir(res);
+      console.log(resJson);
       //
       switch (res.status) {
         case 200:
@@ -19,7 +21,15 @@ const usersModule = (() => {
           window.location.href = "/"; // ホーム画面に戻る
           // window.close(); // 新規作成ウィンドウを閉じる
           break;
-        }
+        case 400:
+          // リクエストのパラメータ間違い
+          alert(resJson.message)
+          break;
+        case 404:
+          // 指定したリソースが見つからない
+          alert(resJson.message);
+          break;
+      }
     }
     //
     return {
@@ -65,9 +75,22 @@ const usersModule = (() => {
           handleError(res);
         },
         setExistingValue: async(uid) => {
-          const res = await fetch(BASE_URL + "/user/" + uid);
-          const resJson = await res.json();
+          const res = await fetch(BASE_URL + "/user/" + uid)
+          .then(response => {
+            if (!response.ok) {
+              handleError(response);
+              window.location.href = "/"; // ホーム画面に戻る
+            }
+            return response;
+          })
+          .catch(error => {
+            alert('通信に失敗しました', error);
+            window.location.href = "/"; // ホーム画面に戻る
+          });
           //
+          const resJson = await res.json();
+          // console.log(res);
+          // console.log(resJson);
           document.getElementById('name').value = resJson.name;
           document.getElementById('profile').value = resJson.profile;
           document.getElementById('date-of-birth').value = resJson.date_of_birth;

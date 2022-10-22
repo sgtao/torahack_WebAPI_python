@@ -76,8 +76,7 @@ def get_user_info(user_id):
             "message": "Not Found!",
         }
         print(error)
-        response = jsonify({'error': error['message']})
-        return response, error['code']
+        return jsonify({'message':error['message']}), error['code']
 #
 # search user
 @app.route("/api/v1/search", methods=["GET"])
