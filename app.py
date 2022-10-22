@@ -97,9 +97,12 @@ def run_database(conn, sql):
     cur = conn.cursor()
     try:
         cur.execute(sql)
-        print("Query successful")
-    finally:
         conn.commit()
+        print("Query success")
+    except Exception as e:
+        print("Query failed at sql:" + sql)
+        raise(e)
+    finally:
         cur.close()
     return
 #
@@ -116,8 +119,7 @@ def post_user():
             "message": "UserName is not Set!",
         }
         print(error)
-        response = jsonify({'error': error['message']})
-        return response, error['code']
+        return jsonify({'error': error['message']}), error['code']
     #
     # data set for SQL command
     name = req_json['name']
@@ -136,10 +138,22 @@ def post_user():
     sql = 'INSERT INTO users (name, profile, date_of_birth) VALUES ('
     sql += '"' + name + '", "' + profile+ '", "' + dateOfBirth + '")'
     # print(sql)
-    run_database(conn, sql)
+    try:
+        run_database(conn, sql)
+        response = {
+            "code": 200,
+            "message": "新規ユーザーを作成しました。",
+        }
+    except Exception as e:
+        print('error:' + str(e))
+        response = {
+            "code": 500,
+            "message": str(e),
+        }
+    finally:
+        conn.close()
     #
-    conn.close()
-    return jsonify({ 'message': "新規ユーザーを作成しました。"}), 201
+    return jsonify({ 'message': response['message']}), response['code']
 #
 # update a existing user
 @app.route("/api/v1/user/<int:user_id>",methods=["PUT"])

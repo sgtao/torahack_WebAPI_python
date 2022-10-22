@@ -29,6 +29,10 @@ const usersModule = (() => {
           // 指定したリソースが見つからない
           alert(resJson.message);
           break;
+        case 500:
+          // サーバエラー
+          alert('ServerError: ' + resJson.message);
+          break;
       }
     }
     //
