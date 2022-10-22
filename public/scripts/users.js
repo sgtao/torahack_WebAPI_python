@@ -16,9 +16,9 @@ const usersModule = (() => {
       //
       switch (res.status) {
         case 200:
-        case 202:
+        case 201:
           alert(resJson.message);
-          window.location.href = "/"; // ホーム画面に戻る
+          // window.location.href = "/"; // ホーム画面に戻る
           // window.close(); // 新規作成ウィンドウを閉じる
           break;
         case 400:
@@ -75,7 +75,7 @@ const usersModule = (() => {
             headers: headers,
             body: JSON.stringify(body)
           });
-          console.log(res);
+          // console.log(res);
           handleError(res);
         },
         setExistingValue: async(uid) => {
@@ -115,6 +115,8 @@ const usersModule = (() => {
             headers: headers,
             body: JSON.stringify(body)
           });
+          // console.log(res);
+          handleError(res);
         },
         deleteUser: async (uid) => {
           const ret = window.confirm("このユーザーを削除しますか？");

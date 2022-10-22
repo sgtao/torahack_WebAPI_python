@@ -141,7 +141,7 @@ def post_user():
     try:
         run_database(conn, sql)
         response = {
-            "code": 200,
+            "code": 201,
             "message": "新規ユーザーを作成しました。",
         }
     except Exception as e:
@@ -165,11 +165,22 @@ def put_user(user_id):
         error = {
             "code": 400,
             # "type": "Bad Request",
-            "description": "UserName is not Set!",
+            "message": "UserName is not Set!",
         }
         print(error)
-        response = jsonify({'message': error['description']})
-        return response, error['code']
+        return jsonify({'message': error['message']}), error['code']
+    #
+    # Error Check: 指定ユーザがいるか？を確認
+    check_user_id = get_user_info(user_id)
+    # print(check_user_id[1])
+    if (check_user_id[1] == 404):
+        error = {
+            "code": 404,
+            # "type": "Bad Request",
+            "message": "指定されたユーザーが見つかりません。",
+        }
+        print(error)
+        return jsonify({'message': error['message']}), error['code']
     #
     # data set for SQL command
     name = req_json['name']
@@ -189,10 +200,22 @@ def put_user(user_id):
     sql += ' profile="' + profile + '", date_of_birth="' + dateOfBirth 
     sql += '" WHERE id=' + str(user_id)
     # print(sql)
-    run_database(conn, sql)
+    try:
+        run_database(conn, sql)
+        response = {
+            "code": 201,
+            "message": "ユーザー情報を更新しました。",
+        }
+    except Exception as e:
+        print('error:' + str(e))
+        response = {
+            "code": 500,
+            "message": str(e),
+        }
+    finally:
+        conn.close()
     #
-    conn.close()
-    return jsonify({ 'message': "ユーザー情報を更新しました。"}), 201
+    return jsonify({ 'message': response['message']}), response['code']
 #
 #
 # delete a existing user
