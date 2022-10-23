@@ -124,12 +124,12 @@ def post_user():
     # data set for SQL command
     name = req_json['name']
     # profile = req_json['profile'] if req_json['profile']  is not "" else ""
-    if req_json['profile']  is not "":
+    if req_json['profile']  != "":
         profile = req_json['profile']
     else:
         profile = ""
     # dateOfBirth = req_json['date_of_birth'] if req_json['date_of_birth'] is not "" else ""
-    if req_json['date_of_birth'] is not "":
+    if req_json['date_of_birth'] != "":
         dateOfBirth =  req_json['date_of_birth']
     else:
         dateOfBirth = ""
@@ -185,12 +185,12 @@ def put_user(user_id):
     # data set for SQL command
     name = req_json['name']
     # profile = req_json['profile'] if req_json['profile']  is not "" else ""
-    if req_json['profile']  is not "":
+    if req_json['profile']  != "":
         profile = req_json['profile']
     else:
         profile = ""
     # dateOfBirth = req_json['date_of_birth'] if req_json['date_of_birth'] is not "" else ""
-    if req_json['date_of_birth'] is not "":
+    if req_json['date_of_birth'] != "":
         dateOfBirth =  req_json['date_of_birth']
     else:
         dateOfBirth = ""
