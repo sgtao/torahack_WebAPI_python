@@ -17,9 +17,49 @@ from flask import Flask, request, Response
 from flask import send_from_directory, jsonify
 import pandas as pd
 #
+# - Define Database class:
+class Database(object):
+    def __init__(self, dbname) -> None:
+        self.dbname = dbname
+    # get db connect to run SQL command
+    def get_connect(self, conn = ""):
+        if conn == "":
+            # データベースをオープンしてFlaskのグローバル変数に保存
+            return sqlite3.connect(self.dbname)
+        return conn
+    # run SQL command for GET Request
+    def get_jsondata_from_sql(self, conn, sql):
+        cur = conn.cursor()
+        data = conn.execute(sql)
+        result = data.fetchall()
+        # SQL処理：
+        read_data = pd.read_sql(sql, conn)
+        cur.close()
+        # print(read_data)
+        dict_data = read_data.to_dict(orient="index")
+        items = []
+        for item in dict_data.values():
+            items.append(item)
+        result = json.dumps(items)
+        #
+        return json.loads(result)
+    # run SQL command for POST/PUT/DELETE Request
+    def run_database(self, conn, sql):
+        cur = conn.cursor()
+        try:
+            cur.execute(sql)
+            conn.commit()
+            print("Query success")
+        except Exception as e:
+            print("Query failed at sql:" + sql)
+            raise(e)
+        finally:
+            cur.close()
+        return
+    #
+#
 app = Flask(__name__)
-dbname = 'db/database.sqlite3'
-item_keys = {'id', 'name', 'profile', 'created_at', 'updated_at', 'date_of_birth'}
+db = Database('db/database.sqlite3')
 #
 def get_connect(conn = ""):
     if conn == "":
@@ -47,9 +87,9 @@ def get_jsondata_from_sql(conn, sql):
 @app.route("/api/v1/users")
 def get_users_list():
     # データベースを開く
-    conn = get_connect()
+    conn = db.get_connect()
     sql = 'SELECT * FROM users'
-    result = get_jsondata_from_sql(conn, sql)
+    result = db.get_jsondata_from_sql(conn, sql)
     # print(result)
     #
     conn.close()
@@ -59,9 +99,9 @@ def get_users_list():
 @app.route("/api/v1/user/<int:user_id>", methods=["GET"])
 def get_user_info(user_id):
     # データベースを開く
-    conn = get_connect()
+    conn = db.get_connect()
     sql = 'SELECT * FROM users WHERE id = ' + str(user_id)
-    result = get_jsondata_from_sql(conn, sql)
+    result = db.get_jsondata_from_sql(conn, sql)
     conn.close()
     #
     # print(result)
@@ -84,9 +124,9 @@ def search_user():
     keyword = request.args.get("q")
     # print("search with " + keyword)
     # データベースを開く
-    conn = get_connect()
+    conn = db.get_connect()
     sql = 'SELECT * FROM users WHERE name LIKE "%' + str(keyword) + '%"'
-    result = get_jsondata_from_sql(conn, sql)
+    result = db.get_jsondata_from_sql(conn, sql)
     # print(result)
     #
     conn.close()
@@ -134,12 +174,12 @@ def post_user():
     else:
         dateOfBirth = ""
     #
-    conn = get_connect()
+    conn = db.get_connect()
     sql = 'INSERT INTO users (name, profile, date_of_birth) VALUES ('
     sql += '"' + name + '", "' + profile+ '", "' + dateOfBirth + '")'
     # print(sql)
     try:
-        run_database(conn, sql)
+        db.run_database(conn, sql)
         response = {
             "code": 201,
             "message": "新規ユーザーを作成しました。",
@@ -195,13 +235,13 @@ def put_user(user_id):
     else:
         dateOfBirth = ""
     #
-    conn = get_connect()
+    conn = db.get_connect()
     sql  = 'UPDATE users SET name="' + name + '", '
     sql += ' profile="' + profile + '", date_of_birth="' + dateOfBirth 
     sql += '" WHERE id=' + str(user_id)
     # print(sql)
     try:
-        run_database(conn, sql)
+        db.run_database(conn, sql)
         response = {
             "code": 201,
             "message": "ユーザー情報を更新しました。",
@@ -235,10 +275,10 @@ def delete_user(user_id):
         print(response)
         return jsonify({'message': response['message']}), response['code']
     #
-    conn = get_connect()
+    conn = db.get_connect()
     sql  = 'DELETE FROM users WHERE id=' + str(user_id)
     # print(sql)
-    run_database(conn, sql)
+    db.run_database(conn, sql)
     #
     conn.close()
     return jsonify({ 'message': "ユーザー情報を更新しました。"}), 201
