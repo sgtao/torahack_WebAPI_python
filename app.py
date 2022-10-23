@@ -69,30 +69,10 @@ class Database(object):
         return
     #
 #
+##########################
+# define API services
 app = Flask(__name__)
 db = Database('db/database.sqlite3')
-#
-def get_connect(conn = ""):
-    if conn == "":
-        # データベースをオープンしてFlaskのグローバル変数に保存
-        return sqlite3.connect(dbname)
-    return conn
-#
-def get_jsondata_from_sql(conn, sql):
-    cur = conn.cursor()
-    data = conn.execute(sql)
-    result = data.fetchall()
-    # SQL処理：
-    read_data = pd.read_sql(sql, conn)
-    cur.close()
-    # print(read_data)
-    dict_data = read_data.to_dict(orient="index")
-    items = []
-    for item in dict_data.values():
-        items.append(item)
-    result = json.dumps(items)
-    #
-    return json.loads(result)
 #
 # get users list
 @app.route("/api/v1/users")
@@ -142,20 +122,6 @@ def search_user():
     #
     db.close_connect(conn)
     return result
-#
-# for POST/PUT/DELETE Request
-def run_database(conn, sql):
-    cur = conn.cursor()
-    try:
-        cur.execute(sql)
-        conn.commit()
-        print("Query success")
-    except Exception as e:
-        print("Query failed at sql:" + sql)
-        raise(e)
-    finally:
-        cur.close()
-    return
 #
 # add a new user
 @app.route('/api/v1/users',methods=["POST"])
@@ -267,7 +233,6 @@ def put_user(user_id):
         db.close_connect(conn)
     #
     return jsonify({ 'message': response['message']}), response['code']
-#
 #
 # delete a existing user
 @app.route("/api/v1/user/<int:user_id>",methods=["DELETE"])
