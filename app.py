@@ -17,52 +17,83 @@ from flask import Flask, request, Response
 from flask import send_from_directory, jsonify
 import pandas as pd
 #
-app = Flask(__name__)
-dbname = 'db/database.sqlite3'
-item_keys = {'id', 'name', 'profile', 'created_at', 'updated_at', 'date_of_birth'}
-#
-def get_connect(conn = ""):
-    if conn == "":
-        # データベースをオープンしてFlaskのグローバル変数に保存
-        return sqlite3.connect(dbname)
-    return conn
-#
-def get_jsondata_from_sql(conn, sql):
-    cur = conn.cursor()
-    data = conn.execute(sql)
-    result = data.fetchall()
-    # SQL処理：
-    read_data = pd.read_sql(sql, conn)
-    cur.close()
-    # print(read_data)
-    dict_data = read_data.to_dict(orient="index")
-    items = []
-    for item in dict_data.values():
-        items.append(item)
-    result = json.dumps(items)
+# - Define Database class:
+class Database(object):
+    def __init__(self, dbname) -> None:
+        self.dbname = dbname
+        self.conn = ""
+    # get db connect to run SQL command
+    def get_connect(self, conn = ""):
+        if conn == "":
+            # データベースをオープンしてFlaskのグローバル変数に保存
+            self.conn = sqlite3.connect(self.dbname)
+            return self.conn
+        return conn
+    # close db connect
+    def close_connect(self, conn):
+        if (conn == self.conn):
+            conn.close()
+            self.conn = ""
+        else:
+            print('ERROR: connect is difference')
+            raise
     #
-    return json.loads(result)
+    # run SQL command for GET Request
+    def get_jsondata_from_sql(self, conn, sql):
+        cur = conn.cursor()
+        data = conn.execute(sql)
+        result = data.fetchall()
+        # SQL処理：
+        read_data = pd.read_sql(sql, conn)
+        cur.close()
+        # print(read_data)
+        dict_data = read_data.to_dict(orient="index")
+        items = []
+        for item in dict_data.values():
+            items.append(item)
+        result = json.dumps(items)
+        #
+        return json.loads(result)
+    # run SQL command for POST/PUT/DELETE Request
+    def run_database(self, conn, sql):
+        cur = conn.cursor()
+        try:
+            cur.execute(sql)
+            conn.commit()
+            print("Query success")
+        except Exception as e:
+            print("Query failed at sql:" + sql)
+            raise(e)
+        finally:
+            cur.close()
+        return
+    #
+#
+##########################
+# define API services
+app = Flask(__name__)
+db = Database('db/database.sqlite3')
 #
 # get users list
 @app.route("/api/v1/users")
 def get_users_list():
     # データベースを開く
-    conn = get_connect()
+    conn = db.get_connect()
     sql = 'SELECT * FROM users'
-    result = get_jsondata_from_sql(conn, sql)
+    result = db.get_jsondata_from_sql(conn, sql)
     # print(result)
     #
-    conn.close()
+    db.close_connect(conn)
     return result
 #
 # get a user
 @app.route("/api/v1/user/<int:user_id>", methods=["GET"])
 def get_user_info(user_id):
     # データベースを開く
-    conn = get_connect()
+    conn = db.get_connect()
     sql = 'SELECT * FROM users WHERE id = ' + str(user_id)
-    result = get_jsondata_from_sql(conn, sql)
-    conn.close()
+    result = db.get_jsondata_from_sql(conn, sql)
+    db.close_connect(conn)
     #
     # print(result)
     # print(len(result))
@@ -84,27 +115,13 @@ def search_user():
     keyword = request.args.get("q")
     # print("search with " + keyword)
     # データベースを開く
-    conn = get_connect()
+    conn = db.get_connect()
     sql = 'SELECT * FROM users WHERE name LIKE "%' + str(keyword) + '%"'
-    result = get_jsondata_from_sql(conn, sql)
+    result = db.get_jsondata_from_sql(conn, sql)
     # print(result)
     #
-    conn.close()
+    db.close_connect(conn)
     return result
-#
-# for POST/PUT/DELETE Request
-def run_database(conn, sql):
-    cur = conn.cursor()
-    try:
-        cur.execute(sql)
-        conn.commit()
-        print("Query success")
-    except Exception as e:
-        print("Query failed at sql:" + sql)
-        raise(e)
-    finally:
-        cur.close()
-    return
 #
 # add a new user
 @app.route('/api/v1/users',methods=["POST"])
@@ -124,22 +141,22 @@ def post_user():
     # data set for SQL command
     name = req_json['name']
     # profile = req_json['profile'] if req_json['profile']  is not "" else ""
-    if req_json['profile']  is not "":
+    if req_json['profile']  != "":
         profile = req_json['profile']
     else:
         profile = ""
     # dateOfBirth = req_json['date_of_birth'] if req_json['date_of_birth'] is not "" else ""
-    if req_json['date_of_birth'] is not "":
+    if req_json['date_of_birth'] != "":
         dateOfBirth =  req_json['date_of_birth']
     else:
         dateOfBirth = ""
     #
-    conn = get_connect()
+    conn = db.get_connect()
     sql = 'INSERT INTO users (name, profile, date_of_birth) VALUES ('
     sql += '"' + name + '", "' + profile+ '", "' + dateOfBirth + '")'
     # print(sql)
     try:
-        run_database(conn, sql)
+        db.run_database(conn, sql)
         response = {
             "code": 201,
             "message": "新規ユーザーを作成しました。",
@@ -151,7 +168,7 @@ def post_user():
             "message": str(e),
         }
     finally:
-        conn.close()
+        db.close_connect(conn)
     #
     return jsonify({ 'message': response['message']}), response['code']
 #
@@ -185,23 +202,23 @@ def put_user(user_id):
     # data set for SQL command
     name = req_json['name']
     # profile = req_json['profile'] if req_json['profile']  is not "" else ""
-    if req_json['profile']  is not "":
+    if req_json['profile']  != "":
         profile = req_json['profile']
     else:
         profile = ""
     # dateOfBirth = req_json['date_of_birth'] if req_json['date_of_birth'] is not "" else ""
-    if req_json['date_of_birth'] is not "":
+    if req_json['date_of_birth'] != "":
         dateOfBirth =  req_json['date_of_birth']
     else:
         dateOfBirth = ""
     #
-    conn = get_connect()
+    conn = db.get_connect()
     sql  = 'UPDATE users SET name="' + name + '", '
     sql += ' profile="' + profile + '", date_of_birth="' + dateOfBirth 
     sql += '" WHERE id=' + str(user_id)
     # print(sql)
     try:
-        run_database(conn, sql)
+        db.run_database(conn, sql)
         response = {
             "code": 201,
             "message": "ユーザー情報を更新しました。",
@@ -213,10 +230,9 @@ def put_user(user_id):
             "message": str(e),
         }
     finally:
-        conn.close()
+        db.close_connect(conn)
     #
     return jsonify({ 'message': response['message']}), response['code']
-#
 #
 # delete a existing user
 @app.route("/api/v1/user/<int:user_id>",methods=["DELETE"])
@@ -235,12 +251,12 @@ def delete_user(user_id):
         print(response)
         return jsonify({'message': response['message']}), response['code']
     #
-    conn = get_connect()
+    conn = db.get_connect()
     sql  = 'DELETE FROM users WHERE id=' + str(user_id)
     # print(sql)
-    run_database(conn, sql)
+    db.run_database(conn, sql)
     #
-    conn.close()
+    db.close_connect(conn)
     return jsonify({ 'message': "ユーザー情報を更新しました。"}), 201
 #
 # temporal web service
