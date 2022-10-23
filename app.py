@@ -21,12 +21,23 @@ import pandas as pd
 class Database(object):
     def __init__(self, dbname) -> None:
         self.dbname = dbname
+        self.conn = ""
     # get db connect to run SQL command
     def get_connect(self, conn = ""):
         if conn == "":
             # データベースをオープンしてFlaskのグローバル変数に保存
-            return sqlite3.connect(self.dbname)
+            self.conn = sqlite3.connect(self.dbname)
+            return self.conn
         return conn
+    # close db connect
+    def close_connect(self, conn):
+        if (conn == self.conn):
+            conn.close()
+            self.conn = ""
+        else:
+            print('ERROR: connect is difference')
+            raise
+    #
     # run SQL command for GET Request
     def get_jsondata_from_sql(self, conn, sql):
         cur = conn.cursor()
@@ -92,7 +103,7 @@ def get_users_list():
     result = db.get_jsondata_from_sql(conn, sql)
     # print(result)
     #
-    conn.close()
+    db.close_connect(conn)
     return result
 #
 # get a user
@@ -102,7 +113,7 @@ def get_user_info(user_id):
     conn = db.get_connect()
     sql = 'SELECT * FROM users WHERE id = ' + str(user_id)
     result = db.get_jsondata_from_sql(conn, sql)
-    conn.close()
+    db.close_connect(conn)
     #
     # print(result)
     # print(len(result))
@@ -129,7 +140,7 @@ def search_user():
     result = db.get_jsondata_from_sql(conn, sql)
     # print(result)
     #
-    conn.close()
+    db.close_connect(conn)
     return result
 #
 # for POST/PUT/DELETE Request
@@ -191,7 +202,7 @@ def post_user():
             "message": str(e),
         }
     finally:
-        conn.close()
+        db.close_connect(conn)
     #
     return jsonify({ 'message': response['message']}), response['code']
 #
@@ -253,7 +264,7 @@ def put_user(user_id):
             "message": str(e),
         }
     finally:
-        conn.close()
+        db.close_connect(conn)
     #
     return jsonify({ 'message': response['message']}), response['code']
 #
@@ -280,7 +291,7 @@ def delete_user(user_id):
     # print(sql)
     db.run_database(conn, sql)
     #
-    conn.close()
+    db.close_connect(conn)
     return jsonify({ 'message': "ユーザー情報を更新しました。"}), 201
 #
 # temporal web service
